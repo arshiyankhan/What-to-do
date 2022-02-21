@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:what_to_do_app/data/task.dart';
 import 'package:what_to_do_app/widgets/task_card.dart';
@@ -17,13 +18,51 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Task> tasks_data = [
-    Task('Create a new Project', false),
-    Task('Working Call', false),
-    Task('Meet with doctor', false),
-    Task('Go to the shop', false)
-  ];
 
+  TextEditingController _controller = TextEditingController();
+
+  List<Task> tasks_data = [];
+
+  void showAddTaskDialog(){
+    _controller.text = "";
+    
+    showDialog(
+      context: context, 
+      builder: (context) => CupertinoAlertDialog(
+        title: Container(child: Text('Create New Task'),margin: EdgeInsets.only(bottom: 14)),
+        content: CupertinoTextField(
+          controller: _controller,
+          autofocus: true,
+        ),
+        actions: [
+          CupertinoButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Colors.red
+              )),
+          ),
+          CupertinoButton(
+            onPressed: (){
+              if (_controller.text.isEmpty){
+                return;
+              }
+              Navigator.pop(context);
+              Task createdTask = Task(_controller.text, false);
+              setState(() {
+                tasks_data.add(createdTask);
+              });
+            },
+            child: Text('Done'), 
+            )
+        ],
+      ) 
+      );
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,7 +86,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            showAddTaskDialog();
+          },
           child: Icon(
             Icons.add,
             size: 30,
@@ -62,11 +103,13 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: (){
                 setState(() {
                   tasks_data[index].isCompleted =!tasks_data[index].isCompleted;
-                });
-              },
-            );
-          }
+                  });
+                },
+              );
+            }
           )
-          )));
+        )
+      )
+    );
   }
 }
