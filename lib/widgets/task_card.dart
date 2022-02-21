@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:what_to_do_app/data/task.dart';
 
-class TaskCard extends StatefulWidget {
-  TaskCard({ Key? key, required this.task }) : super(key: key);
 
+class TaskCard extends StatelessWidget {
+  TaskCard({ Key? key,required this.task, required this.onTap }) : super(key: key);
+  Function onTap;
   Task task;
 
-  @override
-  _TaskCardState createState() => _TaskCardState();
-}
-
-class _TaskCardState extends State<TaskCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -30,18 +26,16 @@ class _TaskCardState extends State<TaskCard> {
         ),
         child: TextButton(
           onPressed: (){
-            setState(() {
-              widget.task.isCompleted=!widget.task.isCompleted;
-            });
+              onTap();
           },
           child: Row(
             children: [
               Text(
-            widget.task.title,
+            task.title,
             style: TextStyle(
               fontSize: 16,
-              color: widget.task.isCompleted?Colors.grey[400]:Colors.grey[600],
-              decoration: widget.task.isCompleted?TextDecoration.lineThrough:TextDecoration.none,
+              color: task.isCompleted?Colors.grey[400]:Colors.grey[600],
+              decoration: task.isCompleted?TextDecoration.lineThrough:TextDecoration.none,
             ),
             ),
             Spacer(),
@@ -54,7 +48,7 @@ class _TaskCardState extends State<TaskCard> {
               size: 18
               ),
               decoration: BoxDecoration(
-                color: widget.task.isCompleted?Colors.green:Colors.white,
+                color: task.isCompleted?Colors.green:Colors.white,
                 borderRadius: BorderRadius.all(Radius.circular(100)),
                 boxShadow: [
                   BoxShadow(

@@ -9,14 +9,19 @@ void main() {
   ));
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   HomeScreen({Key? key}) : super(key: key);
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks_data = [
     Task('Create a new Project', false),
     Task('Working Call', false),
     Task('Meet with doctor', false),
-    Task('Go to the shop', true)
+    Task('Go to the shop', false)
   ];
 
   @override
@@ -54,6 +59,11 @@ class HomeScreen extends StatelessWidget {
           itemBuilder: (((context, index) {
             return TaskCard(
               task: tasks_data[index],
+              onTap: (){
+                setState(() {
+                  tasks_data[index].isCompleted =!tasks_data[index].isCompleted;
+                });
+              },
             );
           }
           )
