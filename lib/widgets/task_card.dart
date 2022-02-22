@@ -3,8 +3,10 @@ import 'package:what_to_do_app/data/task.dart';
 
 
 class TaskCard extends StatelessWidget {
-  TaskCard({ Key? key,required this.task, required this.onTap }) : super(key: key);
+  TaskCard({ Key? key,required this.task, required this.onTap, required this.onLongPress }) : super(key: key);
+
   Function onTap;
+  Function onLongPress;
   Task task;
 
   @override
@@ -27,6 +29,9 @@ class TaskCard extends StatelessWidget {
         child: TextButton(
           onPressed: (){
               onTap();
+          },
+          onLongPress: (){
+            onLongPress();
           },
           child: Row(
             children: [

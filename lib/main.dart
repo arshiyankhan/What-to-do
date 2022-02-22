@@ -62,6 +62,42 @@ class _HomeScreenState extends State<HomeScreen> {
       ) 
       );
   }
+
+   void showDeleteDialog(index){
+
+    showDialog(
+      context: context, 
+      builder: (context) => CupertinoAlertDialog(
+        title: Container(child: Text('Do you want to delete it?'),margin: EdgeInsets.only(bottom: 14)),
+        content: CupertinoTextField(
+          controller: _controller,
+          readOnly: true,
+        ),
+        actions: [
+          CupertinoButton(
+            onPressed: (){
+              Navigator.pop(context);
+              setState(() {
+                tasks_data.removeAt(index);
+              });
+            },
+            child: Text(
+              'Yes',
+              style: TextStyle(
+                color: Colors.red
+              )),
+          ),
+          CupertinoButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            child: Text('No'), 
+            )
+        ],
+      ) 
+      );
+  }
+
   
   @override
   Widget build(BuildContext context) {
@@ -105,6 +141,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   tasks_data[index].isCompleted =!tasks_data[index].isCompleted;
                   });
                 },
+              onLongPress: (){
+                showDeleteDialog(index);
+              }
               );
             }
           )
