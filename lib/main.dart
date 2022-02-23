@@ -131,9 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
           CupertinoButton(
             onPressed: (){
               Navigator.pop(context);
-              setState(() {
-                tasks_data.removeAt(index);
-              });
+                deleteTask(tasks_data[index]);
             },
             child: Text(
               'Yes',
@@ -150,6 +148,35 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ) 
       );
+  }
+
+  void deleteTask(Task task) async{
+    setState(() {
+      tasks_data.remove(task);
+    });
+    dumpJsonData();
+  } 
+  
+  void editTask(index) async{
+    setState(() {
+      tasks_data[index].title = _controller.text;
+    });
+    dumpJsonData();
+  }
+
+  void dumpJsonData() {
+    List<Map<String, dynamic>> finalData = [];
+
+    for (Task task in tasks_data){
+      finalData.add(
+        {
+          "title": task.title,
+          "isCompleted": task.isCompleted
+        }
+      );
+    }
+    String json = jsonEncode(finalData);
+    tasksFile.writeAsString(json);
   }
 
   void showEditDialog(index){
@@ -177,9 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
           CupertinoButton(
             onPressed: (){
               Navigator.pop(context);
-              setState(() {
-                tasks_data[index].title = _controller.text;
-              });
+              editTask(index);
             },
             child: Text('Confirm'), 
             )
