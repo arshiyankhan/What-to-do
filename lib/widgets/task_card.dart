@@ -31,7 +31,7 @@ class TaskCard extends StatelessWidget {
               onTap();
           },
           onLongPress: (){
-            onLongPress();
+              onLongPress();
           },
           child: Row(
             children: [

@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:what_to_do_app/data/task.dart';
 import 'package:what_to_do_app/widgets/task_card.dart';
 
@@ -19,33 +23,65 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
 
+  late File tasksFile;
+
   TextEditingController _controller = TextEditingController();
 
   List<Task> tasks_data = [];
+
+  void initState(){
+    super.initState();
+    getTasks();
+  }
+
+  void getTasks() async{
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    
+    String filePath = documentsDirectory.path + "/tasks.json";
+
+    tasksFile = await File(filePath).create(recursive: true);
+
+    String fileData = await tasksFile.readAsString();
+
+    if(fileData==""){
+      fileData = "[]";
+      await tasksFile.writeAsString(fileData);
+    }
+    List<dynamic> json = jsonDecode(fileData);
+
+    for (dynamic item in json){
+      Task task = Task(
+        item['title'],
+        item['isCompleted']
+        );
+      tasks_data.add(task);
+    }
+    setState(() {});
+  }
+
+
 
   void showAddTaskDialog(){
     _controller.text = "";
     
     showDialog(
       context: context, 
-      builder: (context) => CupertinoAlertDialog(
-        title: Container(child: Text('Create New Task'),margin: EdgeInsets.only(bottom: 14)),
-        content: CupertinoTextField(
+      builder: (context) => AlertDialog(
+        title: Container(child: Text('Create New Task')),
+        content: TextField(
           controller: _controller,
           autofocus: true,
         ),
         actions: [
-          CupertinoButton(
+          MaterialButton(
             onPressed: (){
               Navigator.pop(context);
             },
             child: Text(
               'Cancel',
-              style: TextStyle(
-                color: Colors.red
-              )),
+              ),
           ),
-          CupertinoButton(
+          MaterialButton(
             onPressed: (){
               if (_controller.text.isEmpty){
                 return;
@@ -55,24 +91,42 @@ class _HomeScreenState extends State<HomeScreen> {
               setState(() {
                 tasks_data.add(createdTask);
               });
+              addTaskToFile(createdTask);
             },
-            child: Text('Done'), 
+            color: Colors.blue,
+            child: Text(
+              'Done',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+              ), 
             )
         ],
       ) 
       );
   }
 
-   void showDeleteDialog(index){
 
+  void addTaskToFile(Task task) async{
+    Map<String,dynamic> taskMap = {
+      "title": task.title,
+      "isCompleted": task.isCompleted
+    };
+    String fileData = await tasksFile.readAsString();
+
+    List<dynamic> json = jsonDecode(fileData);
+    json.add(taskMap);
+    
+    String finalData = jsonEncode(json);
+    tasksFile.writeAsString(finalData);
+  }
+
+
+   void showDeleteDialog(index){
     showDialog(
       context: context, 
-      builder: (context) => CupertinoAlertDialog(
+      builder: (context) => AlertDialog(
         title: Container(child: Text('Do you want to delete it?'),margin: EdgeInsets.only(bottom: 14)),
-        content: CupertinoTextField(
-          controller: _controller,
-          readOnly: true,
-        ),
         actions: [
           CupertinoButton(
             onPressed: (){
@@ -98,6 +152,92 @@ class _HomeScreenState extends State<HomeScreen> {
       );
   }
 
+  void showEditDialog(index){
+    _controller.text = tasks_data[index].title;
+
+    showDialog(
+      context: context, 
+      builder: (context) => AlertDialog(
+        title: Container(child: Text('Edit this task'),margin: EdgeInsets.only(bottom: 14)),
+         content: CupertinoTextField(
+          controller: _controller,
+          autofocus: true,
+        ),
+        actions: [
+          CupertinoButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Colors.red
+              )),
+          ),
+          CupertinoButton(
+            onPressed: (){
+              Navigator.pop(context);
+              setState(() {
+                tasks_data[index].title = _controller.text;
+              });
+            },
+            child: Text('Confirm'), 
+            )
+        ],
+      ) 
+      );
+  }
+
+  void showBottomModalSheet(index){
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (BuildContext context){
+        return Wrap(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.red),
+                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                      padding: MaterialStateProperty.all(EdgeInsets.symmetric(vertical: 20))
+                    ),
+                    onPressed: (){
+                      Navigator.pop(context);
+                      setState(() {
+                        showDeleteDialog(index);
+                      });
+                    },
+                    child: Text('Delete')
+                    ),
+                  SizedBox(
+                    height:5
+                  ),
+                  TextButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.blue),
+                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                      padding: MaterialStateProperty.all(EdgeInsets.symmetric(vertical: 20))
+                    ),
+                    onPressed: (){
+                      Navigator.pop(context);
+                      setState(() {
+                        showEditDialog(index);
+                      });
+                    },
+                    child: Text('Edit')
+                    )
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+      );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -142,8 +282,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 },
               onLongPress: (){
-                showDeleteDialog(index);
-              }
+                showBottomModalSheet(index);
+                }
               );
             }
           )
